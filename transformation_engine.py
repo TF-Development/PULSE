@@ -43,27 +43,40 @@ def process_text(name, count=1):
         for _ in range(count):
             message = random.choice(group["messages"])
             execute_additional_text(message)
+def get_input():
+    while True:
+        response = input("Please enter y/yes or n/no: ").lower().strip()
+        if response in ["y", "yes"]:
+            return "yes"
+        elif response in ["n", "no"]:
+            return "no"
+        else:
+            print("Invalid input. Please enter y/yes or n/no.")
 
 def navigate_questions():
+    outcome_tags_collected = []
     current_index = 0
     while current_index < len(questions):
         question = questions[current_index]
         typing_effect(question["text"], "blue")
 
-        # You can expand here with user input, etc.
-        # For this example, I'm simulating a 'Yes' answer always
-        answer = "yes"  
+        answer = get_input()
 
-        if "next_question" in question and answer in question["conditions"]:
-            next_question_id = question["conditions"][answer]["next_question"]
-            if '.' in next_question_id:
-                # Sub-question handling
-                sub_index = int(next_question_id.split('.')[1]) - 1
-                current_index += sub_index
-            else:
-                current_index = int(next_question_id) - 1
+        if answer not in question["answers"]:
+            typing_effect("Invalid answer. Please respond with 'yes' or 'no'.", "red")
+            continue
+
+        outcome_tags_collected.extend(question["answers"][answer]["outcome_tags"])
+
+        if "next_question" in question["answers"][answer]:
+            next_question_id = question["answers"][answer]["next_question"]
+            current_index = int(next_question_id) - 1
         else:
             current_index += 1
+
+    return outcome_tags_collected
+
+
 
 def execute_outcome(outcome_key):
     outcome = outcomes[outcome_key]
@@ -78,12 +91,13 @@ def display_progress(current, total, start_time, interval=5):
         return time.time()  # Update the start time
     return start_time
 
-def execute_outcomes_with_interjections(interject_every, text_name):
+def execute_outcomes_with_interjections(interject_every, text_name, outcome_tags_collected):
     counter = 0
-    total_outcomes = len(outcomes)
-    start_time = time.time()  # For progress monitoring
-    
-    for outcome_key in outcomes:
+    relevant_outcomes = [k for k, v in outcomes.items() if any(tag in v["tags"] for tag in outcome_tags_collected)]
+    total_outcomes = len(relevant_outcomes)
+    start_time = time.time()
+
+    for outcome_key in relevant_outcomes:
         execute_outcome(outcome_key)
         counter += 1
         
@@ -92,23 +106,26 @@ def execute_outcomes_with_interjections(interject_every, text_name):
         if counter % interject_every == 0:
             process_text(text_name, count=1)
 
+
 def process_flow():
     flow = [
         {"action": "text", "name": "boot"},
         {"action": "questions"},
-        {"action": "text", "name": "initiation", "count": 2},
+        {"action": "text", "name": "initiation", "count": 1},
         {"action": "outcomes_with_interjections", "interject_every": 3, "interject_with": "text_element_B"}
-      #  {"action": "text", "name": "element_D", "count": 1},
-      #  {"action": "text", "name": "shutdown"}
+        #  {"action": "text", "name": "element_D", "count": 1},
+        #  {"action": "text", "name": "shutdown"}
     ]
+    outcome_tags_collected = []
     for step in flow:
         action = step["action"]
         if action == "text":
             process_text(step["name"], count=step.get("count", 1))
         elif action == "questions":
-            navigate_questions()
+            outcome_tags_collected = navigate_questions()
         elif action == "outcomes_with_interjections":
-            execute_outcomes_with_interjections(step["interject_every"], step["interject_with"])
+            execute_outcomes_with_interjections(step["interject_every"], step["interject_with"], outcome_tags_collected)
+
 
 if __name__ == "__main__":
     process_flow()
