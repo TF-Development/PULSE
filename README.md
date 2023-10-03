@@ -17,19 +17,13 @@ P.U.L.S.E. is a transformation system simulator intended for use in roleplay or 
 - Ensure you have the latest version of Python installed.
 
 1. **Clone the Repository:**
-    \```bash
-    git clone https://github.com/TF-Development/PULSE.git
-    \```
+    `bash git clone https://github.com/TF-Development/PULSE.git`
 
 2. **Navigate to the Directory:**
-    \```bash
-    cd PULSE
-    \```
+    `cd PULSE`
 
 3. **Run the Application:**
-    \```bash
-    python transformation_engine.py
-    \```
+    `python transformation_engine.py`
 
 4. Follow the on-screen prompts and answer the questions as they appear.
 
