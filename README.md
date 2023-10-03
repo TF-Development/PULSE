@@ -1,4 +1,4 @@
-# P.U.L.S.E. Board Game Transformation Module
+# P.U.L.S.E. Transformation Module
 _Programmable Unit for Lust & Sensory Enhancement_
 
 ## Overview
